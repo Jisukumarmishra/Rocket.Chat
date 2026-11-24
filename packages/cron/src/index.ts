@@ -15,26 +15,10 @@ const runCronJobFunctionAndPersistResult = async (fn: () => Promise<unknown>, jo
 	});
 	try {
 		const result = await fn();
-		await CronHistory.updateOne(
-			{ _id: insertedId },
-			{
-				$set: {
-					finishedAt: new Date(),
-					result,
-				},
-			},
-		);
+		await CronHistory.setResultById(insertedId, new Date(), result);
 		return result;
 	} catch (error: any) {
-		await CronHistory.updateOne(
-			{ _id: insertedId },
-			{
-				$set: {
-					finishedAt: new Date(),
-					error: error?.stack ? error.stack : error,
-				},
-			},
-		);
+		await CronHistory.setErrorById(insertedId, new Date(), error?.stack ? error.stack : error);
 		throw error;
 	}
 };
