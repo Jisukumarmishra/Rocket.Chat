@@ -160,6 +160,14 @@ describe('OmnichannelQueueInactivityMonitorClass', () => {
 			modelsMock.LivechatRooms.findOneById.reset();
 			livechatMock.closeRoom.reset();
 		});
+		it('should read only the inquiry status and room', async () => {
+			const qclass = new OmnichannelQueueInactivityMonitorClass();
+			modelsMock.LivechatInquiry.findOneById.resolves({ status: 'taken' });
+
+			await qclass.closeRoom({ attrs: { data: { inquiryId: 'inquiryId' } } });
+
+			expect(modelsMock.LivechatInquiry.findOneById.calledOnceWithExactly('inquiryId', { projection: { status: 1, rid: 1 } })).to.be.true;
+		});
 		it('should ignore the inquiry if its not in queue anymore', async () => {
 			const qclass = new OmnichannelQueueInactivityMonitorClass();
 			modelsMock.LivechatInquiry.findOneById.resolves({ status: 'taken' });
