@@ -2,6 +2,7 @@ import type { IModerationReport, IMessage, IModerationAudit, MessageReport, User
 import type { AggregationCursor, Document, FindCursor, FindOptions, UpdateResult } from 'mongodb';
 
 import type { FindPaginated, IBaseModel } from './IBaseModel';
+import type { DocumentWithProjection, FindOptionsWithProjection } from '../types/DocumentWithProjection';
 
 export type PaginationParams<T extends Document> = {
 	count: number;
@@ -61,6 +62,22 @@ export interface IModerationReportsModel extends IBaseModel<IModerationReport> {
 		pagination: PaginationParams<IModerationReport>,
 		options?: FindOptions<IModerationReport>,
 	): FindPaginated<FindCursor<Omit<UserReport, 'moderationInfo'>>>;
+
+	findOneNotHiddenMessageReportByUserId<
+		T extends Document = IModerationReport,
+		O extends FindOptionsWithProjection<T> = FindOptionsWithProjection<T>,
+	>(
+		userId: string,
+		options?: O,
+	): Promise<DocumentWithProjection<T, O> | null>;
+
+	findOneNotHiddenMessageReportByMessageId<
+		T extends Document = IModerationReport,
+		O extends FindOptionsWithProjection<T> = FindOptionsWithProjection<T>,
+	>(
+		messageId: IMessage['_id'],
+		options?: O,
+	): Promise<DocumentWithProjection<T, O> | null>;
 
 	hideMessageReportsByMessageId(
 		messageId: IMessage['_id'],

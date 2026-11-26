@@ -6,7 +6,13 @@ import type {
 	MessageReport,
 	UserReport,
 } from '@rocket.chat/core-typings';
-import type { FindPaginated, IModerationReportsModel, PaginationParams } from '@rocket.chat/model-typings';
+import type {
+	DocumentWithProjection,
+	FindOptionsWithProjection,
+	FindPaginated,
+	IModerationReportsModel,
+	PaginationParams,
+} from '@rocket.chat/model-typings';
 import type { AggregationCursor, Collection, Db, Document, FindCursor, FindOptions, IndexDescription, UpdateResult } from 'mongodb';
 
 import { BaseRaw } from './BaseRaw';
@@ -326,6 +332,20 @@ export class ModerationReportsRaw extends BaseRaw<IModerationReport> implements 
 		};
 
 		return this.findPaginated(query, opts);
+	}
+
+	findOneNotHiddenMessageReportByUserId<
+		T extends Document = IModerationReport,
+		O extends FindOptionsWithProjection<T> = FindOptionsWithProjection<T>,
+	>(userId: string, options?: O): Promise<DocumentWithProjection<T, O> | null> {
+		return this.findOne<T, O>({ 'message.u._id': userId, '_hidden': { $ne: true } }, options);
+	}
+
+	findOneNotHiddenMessageReportByMessageId<
+		T extends Document = IModerationReport,
+		O extends FindOptionsWithProjection<T> = FindOptionsWithProjection<T>,
+	>(messageId: IMessage['_id'], options?: O): Promise<DocumentWithProjection<T, O> | null> {
+		return this.findOne<T, O>({ 'message._id': messageId, '_hidden': { $ne: true } }, options);
 	}
 
 	async hideMessageReportsByMessageId(messageId: string, userId: string, reason: string, action: string): Promise<UpdateResult | Document> {
